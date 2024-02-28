@@ -22,13 +22,13 @@ class BaseRegressor():
         self.loss_hist_val = []
     
     def make_prediction(self, X):
-        raise NotImplementedError
+        return self.make_prediction(X)
     
     def loss_function(self, y_true, y_pred):
-        raise NotImplementedError
+        return self.loss_function(y_true, y_pred)
         
     def calculate_gradient(self, y_true, X):
-        raise NotImplementedError
+        return self.calculate_gradient(y_true, X)
     
     def train_model(self, X_train, y_train, X_val, y_val):
 
@@ -117,9 +117,15 @@ class LogisticRegressor(BaseRegressor):
             batch_size=batch_size
         )
     
+
+    def sigmoid(self, x):
+        ''' maps x onto sigmoid function '''
+        return 1 / (1 + np.exp(-x))
+
+
     def make_prediction(self, X) -> np.array:
         """
-        TODO: Implement logistic function to get estimates (y_pred) for input X values. The logistic
+        Implement logistic function to get estimates (y_pred) for input X values. The logistic
         function is a transformation of the linear model into an "S-shaped" curve that can be used
         for binary classification.
 
@@ -129,11 +135,18 @@ class LogisticRegressor(BaseRegressor):
         Returns: 
             The predicted labels (y_pred) for given X.
         """
-        pass
+
+                        # sigmoid( dot(X,W) + b ) # b is done via stub addition in the init
+        prediction = self.sigmoid( np.dot(X, self.W) )
+
+        return prediction
+
+
+
     
     def loss_function(self, y_true, y_pred) -> float:
         """
-        TODO: Implement binary cross entropy loss, which assumes that the true labels are either
+        Implement binary cross entropy loss, which assumes that the true labels are either
         0 or 1. (This can be extended to more than two classes, but here we have just two.)
 
         Arguments:
@@ -143,11 +156,16 @@ class LogisticRegressor(BaseRegressor):
         Returns: 
             The mean loss (a single number).
         """
-        pass
+
+        n = len( y_true )
+
+        loss = -1/n * np.sum( y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
+        
+        return loss
         
     def calculate_gradient(self, y_true, X) -> np.ndarray:
         """
-        TODO: Calculate the gradient of the loss function with respect to the given data. This
+        Calculate the gradient of the loss function with respect to the given data. This
         will be used to update the weights during training.
 
         Arguments:
@@ -157,4 +175,14 @@ class LogisticRegressor(BaseRegressor):
         Returns: 
             Vector of gradients.
         """
-        pass
+        # derivation of the gradient, which I will not
+        # pretend to understand, is on page 16 and 22 of the following:
+        # web.stanford.edu/~jurafsky/slp3/5.pdf
+
+        n = len( y_true )
+
+        y_pred = self.make_prediction(X)
+
+        gradient = 1/n * np.dot(X.T, y_pred - y_true)
+
+        return gradient
